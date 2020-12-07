@@ -1,6 +1,6 @@
 namespace GravitationalLensing
 {
-    using ScalerType = long double;
+    using ScalarType = long double;
 
     enum class VectorComponent : size_t
     {
@@ -9,25 +9,25 @@ namespace GravitationalLensing
         Z = 2
     };
 
-    struct alignas( ScalerType ) Vector3
+    struct alignas( ScalarType ) Vector3
     {
-        ScalerType x_, y_, z_;
-        Vector3( ScalerType x = 0.0, ScalerType y = 0.0, ScalerType z = 0.0 ) : x_( x ), y_( y ), z_( z ) {
+        ScalarType x_, y_, z_;
+        Vector3( ScalarType x = 0.0, ScalarType y = 0.0, ScalarType z = 0.0 ) : x_( x ), y_( y ), z_( z ) {
         }
-        Vector3& SetComponents( ScalerType x, ScalerType y, ScalerType z )
+        Vector3& SetComponents( ScalarType x, ScalarType y, ScalarType z )
         {
             x_ = x;
             y_ = y;
             z_ = z;
             return *this;
         }
-        Vector3 ComponentWiseAdd( ScalerType xDifference, ScalerType yDifference, ScalerType zDifference ) const {
+        Vector3 ComponentWiseAdd( ScalarType xDifference, ScalarType yDifference, ScalarType zDifference ) const {
             return Vector3{ x_ + xDifference, y_ + yDifference, z_ + zDifference };
         }
-        Vector3 ComponentWiseAdd( ScalerType difference[ 3 ] ) const {
+        Vector3 ComponentWiseAdd( ScalarType difference[ 3 ] ) const {
             return Vector3{ x_ + difference[ 0 ], y_ + difference[ 1 ], z_ + difference[ 2 ] };
         }
-        Vector3& ComponentWiseAddEquals( ScalerType xDifference, ScalerType yDifference, ScalerType zDifference )
+        Vector3& ComponentWiseAddEquals( ScalarType xDifference, ScalarType yDifference, ScalarType zDifference )
         {
             x_ += xDifference;
             y_ += yDifference;
@@ -43,7 +43,7 @@ namespace GravitationalLensing
         Vector3 operator-() {
             return Vector3( -x_, -y_, -z_ );
         }
-        ScalerType operator[]( VectorComponent index )
+        ScalarType operator[]( VectorComponent index )
         {
             switch( index )
             {
@@ -64,11 +64,11 @@ namespace GravitationalLensing
         template<> \
         struct SpecifyComponent< VectorComponent:: VECTOR_COMPONENT_PARAMETER > \
         { \
-            const ScalerType& ComponentConstant; \
+            const ScalarType& ComponentConstant; \
             SpecifyComponent( const Vector3& vector ) : \
                     ComponentConstant( vector. COMPONENT_PARAMETER ) { \
             } \
-            operator const ScalerType&() { \
+            operator const ScalarType&() { \
                 return ComponentConstant; \
             } \
         };
@@ -76,7 +76,7 @@ namespace GravitationalLensing
     template< VectorComponent ComponentSelectorConstant >
     struct SpecifyComponent {
         SpecifyComponent( const Vector3& vector ) = delete;
-        operator const ScalerType& ( ) = delete;
+        operator const ScalarType& ( ) = delete;
     };
 
     SPECIFY_COMPONENT_SPECILIZATION_MACRO( x_, X )

@@ -2,50 +2,50 @@
 namespace GravitationalLensing
 {
     template< typename FunctionOfVectorType >
-    ScalerType FirstDerivative( FunctionOfVectorType function, VectorComponent WithRespectToConstant, ScalerType IntervalConstant, const Vector3& vector )
+    ScalarType FirstDerivative( FunctionOfVectorType function, VectorComponent WithRespectToConstant, ScalarType IntervalConstant, const Vector3& vector )
     {
-        ScalerType intervalArray[ 3 ] = { 0.0 };
+        ScalarType intervalArray[ 3 ] = { 0.0 };
         size_t WithRespectToSizeTypeConstant = static_cast< size_t >( WithRespectToConstant );
         intervalArray[ WithRespectToSizeTypeConstant ] = IntervalConstant;
-        const ScalerType FirstValueConstant = function( vector.ComponentWiseAdd( intervalArray ) );
+        const ScalarType FirstValueConstant = function( vector.ComponentWiseAdd( intervalArray ) );
         intervalArray[ WithRespectToSizeTypeConstant ] = -IntervalConstant;
-        const ScalerType SecondValueConstant = function( vector.ComponentWiseAdd( intervalArray ) );
+        const ScalarType SecondValueConstant = function( vector.ComponentWiseAdd( intervalArray ) );
         //Center Divided Difference Method.//
-        //( f(x+h) - f(x-h) )/ 2h//
+        //( f(x+h) - f(x-h) ) / 2h//
         return ( FirstValueConstant - SecondValueConstant ) / ( 2.0 * IntervalConstant );
     }
 
     template< typename FunctionOfVectorType >
-    ScalerType SecondDerivative( FunctionOfVectorType function, VectorComponent WithRespectToConstant, ScalerType IntervalConstant, const Vector3& vector )
+    ScalarType SecondDerivative( FunctionOfVectorType function, VectorComponent WithRespectToConstant, ScalarType IntervalConstant, const Vector3& vector )
     {
-        ScalerType intervalArray[ 3 ] = { 0.0 };
+        ScalarType intervalArray[ 3 ] = { 0.0 };
         size_t WithRespectToSizeTypeConstant = static_cast< size_t >( WithRespectToConstant );
         intervalArray[ WithRespectToSizeTypeConstant ] = IntervalConstant;
-        const ScalerType FirstValueConstant = function( vector.ComponentWiseAdd( intervalArray ) );
+        const ScalarType FirstValueConstant = function( vector.ComponentWiseAdd( intervalArray ) );
         intervalArray[ WithRespectToSizeTypeConstant ] = -IntervalConstant;
-        const ScalerType SecondValueConstant = function( vector.ComponentWiseAdd( intervalArray ) );
+        const ScalarType SecondValueConstant = function( vector.ComponentWiseAdd( intervalArray ) );
         //Center Divided Difference Method.//
         //( f(x+h) - 2f(x) + f(x-h) ) / h^2//
         return ( FirstValueConstant - ( 2.0 * function( vector ) ) + SecondValueConstant ) / ( IntervalConstant * IntervalConstant );
     }
 
     template< typename FunctionOfVector >
-    ScalerType MixedDerivative( FunctionOfVector function, VectorComponent FirstWithRespectToConstant,
-        VectorComponent SecondWithRespectToConstant, ScalerType IntervalConstant, const Vector3& vector )
+    ScalarType MixedDerivative( FunctionOfVector function, VectorComponent FirstWithRespectToConstant,
+        VectorComponent SecondWithRespectToConstant, ScalarType IntervalConstant, const Vector3& vector )
     {
-        ScalerType intervalArray[ 3 ] = { 0.0 };
+        ScalarType intervalArray[ 3 ] = { 0.0 };
         const size_t FirstWithRespectToSizeTypeConstant = static_cast< size_t >( FirstWithRespectToConstant );
         const size_t SecondWithRespectToSizeTypeConstant = static_cast< size_t >( SecondWithRespectToConstant );
         //Ugly, but if we are going to generalize it has to be done.//
         intervalArray[ FirstWithRespectToSizeTypeConstant ] = IntervalConstant;
         intervalArray[ SecondWithRespectToSizeTypeConstant ] = IntervalConstant;
-        const ScalerType FirstValueConstant = function( vector.ComponentWiseAdd( intervalArray ) );
+        const ScalarType FirstValueConstant = function( vector.ComponentWiseAdd( intervalArray ) );
         intervalArray[ SecondWithRespectToSizeTypeConstant ] = -IntervalConstant;
-        const ScalerType ThirdValueConstant = function( vector.ComponentWiseAdd( intervalArray ) );
+        const ScalarType ThirdValueConstant = function( vector.ComponentWiseAdd( intervalArray ) );
         intervalArray[ FirstWithRespectToSizeTypeConstant ] = -IntervalConstant;
-        const ScalerType SecondValueConstant = function( vector.ComponentWiseAdd( intervalArray ) );
+        const ScalarType SecondValueConstant = function( vector.ComponentWiseAdd( intervalArray ) );
         intervalArray[ SecondWithRespectToSizeTypeConstant ] = IntervalConstant;
-        const ScalerType FourthValueConstant = function( vector.ComponentWiseAdd( intervalArray ) );
+        const ScalarType FourthValueConstant = function( vector.ComponentWiseAdd( intervalArray ) );
         //Note, could use two different "h"'s//
         // ( f(x+h,y+h) + f(x-h,y-h) - f(x+h,y-h) - f(x-h,y+h) ) / 4h ^ 2 //
         return ( FirstValueConstant + SecondValueConstant - ThirdValueConstant - FourthValueConstant ) /
@@ -58,17 +58,17 @@ namespace GravitationalLensing
         template< VectorComponent FirstWithRespectToConstant, VectorComponent SecondWithRespectToConstant >
         struct SecondDeriver
         {
-            ScalerType interval;
+            ScalarType interval;
             Vector3 input;
             FunctionOfVectorType function;
             SecondDeriver() = default;
-            SecondDeriver( FunctionOfVectorType function_, ScalerType interval_, Vector3 input_ ) :
+            SecondDeriver( FunctionOfVectorType function_, ScalarType interval_, Vector3 input_ ) :
                 function( function_ ), interval( interval_ ), input( input_ ) {
             }
-            ScalerType Derive() {
+            ScalarType Derive() {
                 return MixedDerivative( function, FirstWithRespectToConstant, SecondWithRespectToConstant, interval, input );
             }
-            ScalerType operator()() {
+            ScalarType operator()() {
                 return Derive();
             }
             SecondDeriver< FirstWithRespectToConstant, FirstWithRespectToConstant >& operator=(
@@ -76,7 +76,7 @@ namespace GravitationalLensing
                 Assign( other.function, other.interval, other.input );
                 return *this;
             }
-            void Assign( FunctionOfVectorType function_, ScalerType interval_, Vector3 input_ )
+            void Assign( FunctionOfVectorType function_, ScalarType interval_, Vector3 input_ )
             {
                 function = function_;
                 interval = interval_;
@@ -87,17 +87,17 @@ namespace GravitationalLensing
         template< VectorComponent WithRespectToConstant >
         struct SecondDeriver< WithRespectToConstant, WithRespectToConstant >
         {
-            ScalerType interval;
+            ScalarType interval;
             Vector3 input;
             FunctionOfVectorType function;
             SecondDeriver() = default;
-            SecondDeriver( FunctionOfVectorType function_, ScalerType interval_, Vector3 input_ ) :
+            SecondDeriver( FunctionOfVectorType function_, ScalarType interval_, Vector3 input_ ) :
                 function( function_ ), interval( interval_ ), input( input_ ) {
             }
-            ScalerType Derive() {
+            ScalarType Derive() {
                 return SecondDerivative( function, WithRespectToConstant, interval, input );
             }
-            ScalerType operator()() {
+            ScalarType operator()() {
                 return Derive();
             }
             SecondDeriver< WithRespectToConstant, WithRespectToConstant >& operator=(
@@ -105,7 +105,7 @@ namespace GravitationalLensing
                 Assign( other.function, other.interval, other.input );
                 return *this;
             }
-            void Assign( FunctionOfVectorType function_, ScalerType interval_, Vector3 input_ )
+            void Assign( FunctionOfVectorType function_, ScalarType interval_, Vector3 input_ )
             {
                 function = function_;
                 interval = interval_;
@@ -120,24 +120,24 @@ namespace GravitationalLensing
             SecondDeriver< WithRespectToConstant, VectorComponent::X > x;
             SecondDeriver< WithRespectToConstant, VectorComponent::Y > y;
             SecondDeriver< WithRespectToConstant, VectorComponent::Z > z;
-            ScalerType interval;
+            ScalarType interval;
             Vector3 input;
             FunctionOfVectorType function;
             FirstDeriver() = default;
-            FirstDeriver( FunctionOfVectorType function_, ScalerType interval_, Vector3 input_ ) :
+            FirstDeriver( FunctionOfVectorType function_, ScalarType interval_, Vector3 input_ ) :
                 function( function_ ), interval( interval_ ), input( input_ ) {
             }
-            ScalerType Derive() {
+            ScalarType Derive() {
                 return FirstDerivative( function, WithRespectToConstant, interval, input );
             }
-            ScalerType operator()() {
+            ScalarType operator()() {
                 return Derive();
             }
             FirstDeriver& operator=( FirstDeriver& other ) {
                 Assign( other.function, other.interval, other.input );
                 return *this;
             }
-            void Assign( FunctionOfVectorType function_, ScalerType interval_, Vector3 input_ )
+            void Assign( FunctionOfVectorType function_, ScalarType interval_, Vector3 input_ )
             {
                 function = function_;
                 interval = interval_;
@@ -148,19 +148,19 @@ namespace GravitationalLensing
             }
         };
 
-        ScalerType interval;
+        ScalarType interval;
         Vector3 input;
         FunctionOfVectorType function;
         FirstDeriver< VectorComponent::X > x;
         FirstDeriver< VectorComponent::Y > y;
         FirstDeriver< VectorComponent::Z > z;
-        explicit Deriver( FunctionOfVectorType function_, ScalerType interval_, Vector3 input_ ) {
+        explicit Deriver( FunctionOfVectorType function_, ScalarType interval_, Vector3 input_ ) {
             Derive( function_, interval_, input_ );
         }
         Deriver& Derive( Vector3 input_ ) {
             return Derive( function, interval, input_ );
         }
-        Deriver& Derive( FunctionOfVectorType function_, ScalerType interval_, Vector3 input_ )
+        Deriver& Derive( FunctionOfVectorType function_, ScalarType interval_, Vector3 input_ )
         {
             function = function_;
             interval = interval_;
@@ -174,26 +174,26 @@ namespace GravitationalLensing
 
     namespace Testing
     {
-        ScalerType TestFunctionToDerive( const Vector3& v );
+        ScalarType TestFunctionToDerive( const Vector3& v );
 
-        ScalerType TestFunctionToCompareX( const Vector3& v );
-        ScalerType TestFunctionToCompareY( const Vector3& v );
-        ScalerType TestFunctionToCompareZ( const Vector3& v );
+        ScalarType TestFunctionToCompareX( const Vector3& v );
+        ScalarType TestFunctionToCompareY( const Vector3& v );
+        ScalarType TestFunctionToCompareZ( const Vector3& v );
 
-        ScalerType TestFunctionSecondDerivitiveCompare( const Vector3& v );
-        ScalerType TestFunctionToMixedDerive( const Vector3& v );
+        ScalarType TestFunctionSecondDerivitiveCompare( const Vector3& v );
+        ScalarType TestFunctionToMixedDerive( const Vector3& v );
 
-        ScalerType TestFunctionMixedDerivitiveXY( const Vector3& v );
-        ScalerType TestFunctionMixedDerivitiveYZ( const Vector3& v );
-        ScalerType TestFunctionMixedDerivitiveXZ( const Vector3& v );
+        ScalarType TestFunctionMixedDerivitiveXY( const Vector3& v );
+        ScalarType TestFunctionMixedDerivitiveYZ( const Vector3& v );
+        ScalarType TestFunctionMixedDerivitiveXZ( const Vector3& v );
 
-        ScalerType TestFunctionSecondDerivitiveXX( const Vector3& v );
-        ScalerType TestFunctionSecondDerivitiveYY( const Vector3& v );
-        ScalerType TestFunctionSecondDerivitiveZZ( const Vector3& v );
+        ScalarType TestFunctionSecondDerivitiveXX( const Vector3& v );
+        ScalarType TestFunctionSecondDerivitiveYY( const Vector3& v );
+        ScalarType TestFunctionSecondDerivitiveZZ( const Vector3& v );
 
-        ScalerType TestMixedFunctionFirstDerivitiveX( const Vector3& v );
-        ScalerType TestMixedFunctionFirstDerivitiveY( const Vector3& v );
-        ScalerType TestMixedFunctionFirstDerivitiveZ( const Vector3& v );
+        ScalarType TestMixedFunctionFirstDerivitiveX( const Vector3& v );
+        ScalarType TestMixedFunctionFirstDerivitiveY( const Vector3& v );
+        ScalarType TestMixedFunctionFirstDerivitiveZ( const Vector3& v );
 
         void DemoDerivatives();
     }
