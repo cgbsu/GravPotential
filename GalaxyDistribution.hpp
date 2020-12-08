@@ -4,20 +4,19 @@
 namespace GravitationalLensing
 {
     //A percentage multiplied by this constant will be representated on a scale where 1.0 is 100%//
-    const ScalarType PERCENT_TO_DECIMAL_CONSTANT = .01;
+    const ScalarType PercentToDecimalConstant = .01;
 
+    //Total mass assumed to be in Kg, TODO: Use physical units library?//
     struct Galaxy {
         Vector3 position_;
-        ScalarType totalMass_, darkMatterCoefficent_;
+        ScalarType totalMass_;
     };
-
-
 
     template< typename StatisticalType >
     struct AbstractStatisticalPair {
         StatisticalType average;
         StatisticalType standardDeviation;
-        std::normal_distribution< StatisticalType > ToDistribution() {
+        std::normal_distribution< StatisticalType > ToDistributor() {
             return std::normal_distribution< StatisticalType >( average, standardDeviation );
         }
     };
@@ -32,8 +31,18 @@ namespace GravitationalLensing
 
     Vector3 RandomPointWithinBounds( const VectorDistributor& distributor, std::mt19937& generator );
 
+
+
+
+
+    /*******************************************************************************************************************
+    * TODO: Decouple the galaxy cluster data from the stuff that randomizes galaxies, moved randomization out of *******
+    * functions into here because it was a lot of parameters and I wanted better dependancy injection for ease of use. *
+    * This honestly is pretty bad though, there needs to be a good model where re-randomizing the clusters' parameters *
+    * in particular dimensions, invalidates the galaxies
+    *******************************************************************************************************************/
     template< template< typename GalaxyType > typename GalaxiesContainerType = std::vector >
-    struct GalaxyCluster
+    struct AbstractGalaxyCluster
     {
 
         constexpr static ScalarType GalaxyMassInSolarMassesLowerBoundConstant = 10e11;
@@ -45,7 +54,6 @@ namespace GravitationalLensing
                 .average = DefaultGalaxyClusterDimensionConstant, 
                 .standardDeviation = DefaultGalaxyClusterDimensionConstant };
         constexpr static ScalarType DefaultGalaxyPositionStandardDeviationConstant = DefaultGalaxyDimensionConstant / 2.0;
-        constexpr static StatisticalPair DefaultGalaxyDarkMatterCoefficentDistribution{ 75.0, 5.0 };
         using GalaxiesType = GalaxiesContainerType< Galaxy >;
         constexpr static ScalarType DefaultGalaxyClusterTotalAmbientMassInSolarMassesConstant = 10e15;
         constexpr static ScalarType DefaultGalaxyPositionStandardDeviationConstant = 1.0;
@@ -58,55 +66,50 @@ namespace GravitationalLensing
         constexpr static size_t DefaultNumberOfGalaxiesConstant = 1024;
 
         Vector3 position_, dimensions_;
-        ScalarType darkMatterCoefficent_, clusterTotalAmbientMass_;
+        ScalarType clusterTotalAmbientMass_;
         GalaxiesType galaxies_;
-        std::mt19937 generator;
 
-        explicit GalaxyCluster( GalaxiesType galaxies, 
-                ScalarType darkMatterCoefficent, Vector3 dimensions, 
+        explicit AbstractGalaxyCluster( GalaxiesType galaxies, Vector3 dimensions, 
                 ScalarType clusterTotalAmbientMass = DefaultGalaxyClusterTotalAmbientMassInSolarMassesConstant,
                 Vector3 position = DefaultPositionConstant ) : position_( position ), dimensions_( dimensions ),
-                        darkMatterCoefficent_( darkMatterCoefficent ), clusterTotalAmbientMass_( clusterTotalAmbientMass_ ), 
+                        clusterTotalAmbientMass_( clusterTotalAmbientMass_ ), 
                         galaxies_( galaxies ), generator( std::random_device{}() ) {
+            galaxyTotalMassDistributor_ = galaxyTotalMassDistribution_.ToDistributor();
         }
-        explicit GalaxyCluster(
+        explicit AbstractGalaxyCluster(
                 bool singleGalaxyCluster = true,
-                StatisticalPair galaxyDarkMatterCoefficientDistribution = DefaultGalaxyDarkMatterCoefficentDistribution,
                 StatisticalPair galaxyTotalMassDistribution = DefaultGalaxyTotalMassDistributionConstant,
-                size_t numberOfGalaxies = DefaultNumberOfGalaxiesConstant, 
+                size_t numberOfGalaxies = DefaultNumberOfGalaxiesConstant,
                 StatisticalPair clusterDimensionsDistribution = DefaultGalaxyClusterDimensionDistributionConstant,
                 ScalarType clusterTotalAmbientMass = DefaultGalaxyClusterTotalAmbientMassInSolarMassesConstant,
-                StatisticalPair clusterPositionDistribution = DefaultPositionConstant ) : 
-                        galaxyDarkMatterCoefficentDistribution_( galaxyDarkMatterCoefficientDistribution ), 
-                        galaxyTotalMassDistribution_( galaxyTotalMassDistribution ), 
-                        clusterDimensionsDistribution_( clusterDimensionsDistribution ), 
-                        clusterTotalAmbientMass_( clusterTotalAmbientMass ), 
-                        clusterPositionDistribution_( clusterPositionDistribution ), 
-                        generator( std::random_device{}( ) )
+                StatisticalPair clusterPositionDistribution = DefaultPositionConstant ) :
+                        galaxyTotalMassDistribution_( galaxyTotalMassDistribution ),
+                        clusterDimensionsDistribution_( clusterDimensionsDistribution ),
+                        clusterTotalAmbientMass_( clusterTotalAmbientMass ),
+                        clusterPositionDistribution_( clusterPositionDistribution ),
+                        generator( std::random_device{}() ),
         {
-
+            galaxyTotalMassDistributor_ = galaxyTotalMassDistribution_.ToDistributor();
+            RandomizeGalaxyClusterParameters();
+            PlaceGalaxies( numberOfGalaxies, false );
         }
 
         //( StatisticalPair NumberOfGalaxiesConstant, ScalarType GalaxyPositionStandardDeviationCoefficentConstant,
         //    StatisticalPair GalaxyDarkMatterCoefficentConstant, GalaxyCluster& galaxyCluster, std::mt19937& generator )
-        void PlaceGalaxies( const size_t NumberOfGalaxiesToGenerateConstant, const bool ResetGalaxiesConstant = true )
+        void PlaceGalaxies( const size_t NumberOfGalaxiesToGenerateConstant, const bool ResetGalaxiesConstant )
         {
-            auto distributor = MakeDistributor( galaxyPositionStandardDeviation_, dimensions_, generator );
-            std::normal_distribution darkMatterDistribution = darkMatterCoefficent_.ToDistribution();
+            auto galaxyPositionDistributor = MakeDistributor( galaxyPositionStandardDeviation_, dimensions_, generator );
             if( ResetGalaxiesConstant == true ) {
                 galaxies_.clear();
             }
             for( size_t i = 0; i < NumberOfGalaxiesToGenerateConstant; ++i )
             {
-                galaxyCluster.galaxies_.push_back( Galaxy newGalaxy{
-                        .darkMatterCoefficent_ = std::abs( PERCENT_TO_DECIMAL_CONSTANT * darkMatterDistribution( generator ) ),
-                        .position_ = RandomPointWithinBounds( distributor, generator ) } );
+                galaxyCluster.galaxies_.push_back( Galaxy{
+                        .position_ = RandomPointWithinBounds( galaxyPositionDistributor, generator )
+                        .totalMass_ = ProduceRandomGalaxyTotalMass() * Constants::SolarMassInKilogramsConstant } );
             }
         }
-        //Encapsulation.//
-        StatisticalPair GetGalaxyDarkMatterCoefficentDistribution() {
-            return galaxyDarkMatterCoefficentDistribution_;
-        }
+
         StatisticalPair GetGalaxyTotalMassDistribution() {
             return galaxyTotalMassDistribution_;
         }
@@ -119,12 +122,20 @@ namespace GravitationalLensing
         ScalarType GetGalaxyPositionStandardDeviation() {
             return galaxyPositionStandardDeviation_;
         }
+        ScalarType SetGalaxyPositionStandardDeviation( ScalarType galaxyPositionStandardDeviation ) {
+            galaxyPositionStandardDeviation_ = galaxyPositionStandardDeviation;
+        }
         protected:
-            StatisticalPair galaxyDarkMatterCoefficentDistribution_, 
-                    galaxyTotalMassDistribution_, clusterDimensionsDistribution_, 
+            std::mt19937 generator;
+            StatisticalPair galaxyTotalMassDistribution_, clusterDimensionsDistribution_, 
                     clusterPositionDistribution_;
             ScalarType galaxyPositionStandardDeviation_;
+            std::normal_distribution< ScalarType > galaxyTotalMassDistributor_;
 
+            ScalarType ProduceRandomGalaxyTotalMassInSolarMasses() {
+                //TODO: After MathFunctions is fixed, replace this with MathFucntions abs.//
+                return std::abs( galaxyTotalMassDistributor_( generator ) );
+            }
 
             //GalaxyCluster GenerateGalaxyCluster( StatisticalPair DarkMatterCoeffiecentsConstant,
             //    StatisticalPair GalaxyClusterDimensionsConstant, StatisticalPair GalaxyClusterPositionConstant, std::mt19937& generator )
@@ -133,14 +144,12 @@ namespace GravitationalLensing
             void RandomizeGalaxyClusterParameters()
             {
                 //Selected to sound somewhat cool.//
-                auto dimensionalGenerator = clusterDimensionsDistribution_.ToDistribution();
-                auto positionGenrator = clusterPositionDistribution_.ToDistribution();
-                Vector3 position{ positionGenrator( generator ), positionGenrator( generator ),
+                auto dimensionalGenerator = clusterDimensionsDistribution_.ToDistributor();
+                auto positionGenrator = clusterPositionDistribution_.ToDistributor();
+                position_ = Vector3{ positionGenrator( generator ), positionGenrator( generator ),
                         positionGenrator( generator ) };
-                Vector3 dimensions{ std::abs( dimensionalGenerator( generator ) ),
+                dimensions_ = Vector3{ std::abs( dimensionalGenerator( generator ) ),
                         std::abs( dimensionalGenerator( generator ) ), std::abs( dimensionalGenerator( generator ) ) };
-                return GalaxyCluster{ .position_ = position, .dimensions_ = dimensions, .darkMatterCoefficent_ = std::abs(
-                        PERCENT_TO_DECIMAL_CONSTANT * galaxyDarkMatterCoefficentDistribution_.ToDistribution()( generator ) ), .galaxies_ = GalaxyCluster::GalaxiesType() };
             }
     };
 }

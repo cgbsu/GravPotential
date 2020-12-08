@@ -28,7 +28,7 @@ namespace GravitationalLensing
         for( size_t i = 0; i < AmountOfGalaxiesConstant; ++i )
         {
             Galaxy newGalaxy;
-            newGalaxy.darkMatterCoefficent_ = std::abs( PERCENT_TO_DECIMAL_CONSTANT * darkMatterDistribution( generator ) );
+            newGalaxy.darkMatterCoefficent_ = std::abs( PercentToDecimalConstant * darkMatterDistribution( generator ) );
             newGalaxy.position_ = RandomPointWithinBounds( distributor, generator );
             galaxyCluster.galaxies_.push_back( newGalaxy );
         }
@@ -46,7 +46,7 @@ namespace GravitationalLensing
         Vector3 dimensions{ std::abs( dimensionalGenerator( generator ) ),
                 std::abs( dimensionalGenerator( generator ) ), std::abs( dimensionalGenerator( generator ) ) };
         return GalaxyCluster{ .position_ = position, .dimensions_ = dimensions, .darkMatterCoefficent_ = std::abs( 
-                PERCENT_TO_DECIMAL_CONSTANT * darkMatterCoefficentGenerator( generator ) ), .galaxies_ = GalaxyCluster::GalaxiesType() };
+                PercentToDecimalConstant * darkMatterCoefficentGenerator( generator ) ), .galaxies_ = GalaxyCluster::GalaxiesType() };
     }
     */
 }

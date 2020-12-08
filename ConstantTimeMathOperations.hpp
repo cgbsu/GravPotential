@@ -66,6 +66,8 @@ namespace GravitationalLensing
         static const std::function< ScalarType( ScalarType ) > NaturalLogConstant;
         static const std::function< ScalarType( ScalarType, ScalarType ) > RaiseConstant;
     };
+
+    //TODO: This may negativly impact performence, may want to redo this.//
     template< typename ScalarType = ScalarType >
     const std::function< ScalarType( ScalarType ) > MathFunctions< ScalarType >::SquareRootConstant =
         static_cast< ScalarType( * )( ScalarType ) >( std::sqrt );
