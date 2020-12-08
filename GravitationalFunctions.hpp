@@ -52,7 +52,7 @@ namespace GravitationalLensing
         ScalarType operator()( const Vector3& position ) {
             return CalculatePotential( position );
         }
-        ScalerType CalculatePotential( const Vector3& position )
+        ScalarType CalculatePotential( const Vector3& position )
         {
             const ScalarType MagnitudeConstant = Magnitude( position );
             const ScalarType RuntimeTerm0Constant = MathFunctions< ScalarType >::ArcTanConstant( MagnitudeConstant / TidalRadiusConstant );

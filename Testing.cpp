@@ -115,7 +115,7 @@ namespace GravitationalLensing
 
     void GeneralTest0()
     {
-        std::cout << "Lens Radial Acceleration " << LensRadialAcceleration()( 1.0 / Constants< ScalarType, 0 >::HubbleNaughtConstant ) << "\n";
+/*        std::cout << "Lens Radial Acceleration " << LensRadialAcceleration()( 1.0 / Constants< ScalarType, 0 >::HubbleNaughtConstant ) << "\n";
         std::cout << "Gravitational Potential " << GravitationalPotential( 1.0, 1.0, 1.0 )( Vector3{ 1.0, 1.0, 1.0 } ) << "\n";
         StatisticalPair DarkMatterCoeffiecentsConstant{ .average = 75.0, .standardDeviation = 5.0 };
         StatisticalPair GalaxyClusterDimensionsConstant{ .average = 10000.0, .standardDeviation = 10000.0 };
@@ -148,47 +148,20 @@ namespace GravitationalLensing
             galaxyClusterData << galaxy.position_.x_ << ", " << galaxy.position_.y_ << ", "
                 << galaxy.position_.z_ << ", " << galaxy.darkMatterCoefficent_ << ", ";
         }
-        galaxyClusterData.close();
+        galaxyClusterData.close();*/
     }
 
-    void GeneralTest1()
+    void GalaxyGenerationTest()
     {
-        std::cout << "Lens Radial Acceleration " << LensRadialAcceleration()( 1.0 / Constants< ScalarType, 0 >::HubbleNaughtConstant ) << "\n";
-        std::cout << "Gravitational Potential " << GravitationalPotential( 1.0, 1.0, 1.0 )( Vector3{ 1.0, 1.0, 1.0 } ) << "\n";
-        constexpr ScalarType StepConstant = Constants< ScalarType >::KiloparsecInMetersConstant;
-        StatisticalPair DarkMatterCoeffiecentsConstant{ .average = 75.0, .standardDeviation = 5.0 };
-        StatisticalPair GalaxyClusterDimensionsConstant{ .average = StepConstant *, .standardDeviation = 10000.0 };
-        StatisticalPair GalaxyClusterPositionConstant{ .average = 0.0, .standardDeviation = 100000.0 };
-        std::random_device randomDevice;
-        std::mt19937 generator{ randomDevice() };
-        GalaxyCluster example = GenerateGalaxyCluster( DarkMatterCoeffiecentsConstant,
-            GalaxyClusterDimensionsConstant, GalaxyClusterPositionConstant, generator );
-        StatisticalPair NumberOfGalaxiesConstant{ .average = 1000.0, .standardDeviation = 100.0 };
-        StatisticalPair GalaxyDarkMatterCoefficentConstant{ .average = 75.0, .standardDeviation = 5.0 };
-        ScalarType GalaxyPositionStandardDeviationCoefficentConstant = 1.0;
-        PlaceGalaxies( NumberOfGalaxiesConstant, GalaxyPositionStandardDeviationCoefficentConstant,
-            GalaxyDarkMatterCoefficentConstant, example, generator );
-        //std::stringstream fileName;
-        //fileName << "galaxyClusterData" << TimePointToString( std::chrono::system_clock::now() ) << ".csv";
-        //std::ofstream galaxyClusterData;
-        //galaxyClusterData.open( fileName.str() );
-        std::cout << "Galaxy Cluster With Dimensions x: " <<
-            example.dimensions_.x_ << " y: " << example.dimensions_.y_ << " z: " << example.dimensions_.z_ <<
-            " and dark matter coefficent " << example.darkMatterCoefficent_ << "\n";
-        //std::cout << "There are " << example.galaxies_.size() << " galaxies. Their positions are: \n";
-        //galaxyClusterData << example.galaxies_.size() << ", " << example.dimensions_.x_ << ", " << example.dimensions_.y_ << ", " << example.dimensions_.z_ << ", ";
-        for( auto& galaxy : example.galaxies_ )
+        std::mt19937 generator( std::random_device{}() );
+        GalaxyClusterGenerationParameters clusterParameters;
+        auto cluster = GenerateCluster< std::vector >( generator, clusterParameters );
+        GalaxyGenerationParameters galaxyParamters( cluster.radius_ );
+        GenerateGalaxies( 10, generator, cluster, galaxyParamters );
+        for( auto& galaxy : cluster.galaxies_ )
         {
-            GravitationalPotential Potential( TidalRadiusConstant, ScaledRadiusConstant, MassConstant );
-            std::function potential{ Potential };
-            Deriver< decltype( potential ) > deriver( potential, StepConstant, position );
-        //    std::cout << "    x: " << galaxy.position_.x_ << " y: " <<
-        //        galaxy.position_.y_ << " z: " << galaxy.position_.z_ <<
-        //        " total dark matter percentage: " << galaxy.darkMatterCoefficent_ << "\n";
-        //    galaxyClusterData << galaxy.position_.x_ << ", " << galaxy.position_.y_ << ", "
-        //        << galaxy.position_.z_ << ", " << galaxy.darkMatterCoefficent_ << ", ";
+            std::cout << "Position: ( " << galaxy.position_.x_ << galaxy.position_.y_ << galaxy.position_.z_ << ") "
+                    << "Mass: " << galaxy.totalMass_ << " Radius: " << galaxy.radius_ << "\n";
         }
-        //galaxyClusterData.close();
-
     }
 }

@@ -64,7 +64,10 @@ namespace GravitationalLensing
         static const std::function< ScalarType( ScalarType ) > HyperbolicSineConstant;
         static const std::function< ScalarType( ScalarType ) > ArcTanConstant;
         static const std::function< ScalarType( ScalarType ) > NaturalLogConstant;
+        static const std::function< ScalarType( ScalarType ) > Log10Constant;
+        static const std::function< ScalarType( ScalarType ) > RoundUpConstant;
         static const std::function< ScalarType( ScalarType, ScalarType ) > RaiseConstant;
+        static const std::function< ScalarType( ScalarType, ScalarType ) > ModuloConstant;
     };
 
     //TODO: This may negativly impact performence, may want to redo this.//
@@ -80,7 +83,13 @@ namespace GravitationalLensing
     template< typename ScalarType = ScalarType >
     const std::function< ScalarType( ScalarType ) > MathFunctions< ScalarType >::NaturalLogConstant =
         static_cast< ScalarType( * )( ScalarType ) >( std::log );
+    const std::function< ScalarType( ScalarType ) > MathFunctions< ScalarType >::Log10Constant =
+        static_cast< ScalarType( * )( ScalarType ) >( std::log10 );
+    const std::function< ScalarType( ScalarType ) > MathFunctions< ScalarType >::RoundUpConstant =
+        static_cast< ScalarType( * )( ScalarType ) >( std::ceil );
     template< typename ScalarType = ScalarType >
     const std::function< ScalarType( ScalarType, ScalarType ) > MathFunctions< ScalarType >::RaiseConstant =
         static_cast< ScalarType( * )( ScalarType, ScalarType ) >( std::pow );
+    const std::function< ScalarType( ScalarType, ScalarType ) > MathFunctions< ScalarType >::ModuloConstant =
+        static_cast< ScalarType( * )( ScalarType, ScalarType ) >( std::fmod );
 }

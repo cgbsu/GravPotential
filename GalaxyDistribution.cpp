@@ -1,7 +1,39 @@
 #include "GalaxyDistribution.hpp"
-
 namespace GravitationalLensing
 {
+    void GenerateGalaxies( const size_t NumberOfGalaxiesConstant, std::mt19937& generator, TestingGalaxyCluster& cluster, GalaxyGenerationParameters parameters )
+    {
+        std::normal_distribution< double > galaxyPositionDistributor( 0.0, parameters.GetGalaxyPositionStandardDeviation() );
+        auto radiusDistributor = parameters.GetGalaxyRadiusDistribution().ToDistributor();
+        const ScalarType MaximumGalaxyMassExponentConstant = MathFunctions< ScalarType >::Log10Constant( parameters.GetGalaxyMassInSolarMassesUpperBound() );
+        const ScalarType MinimumGalaxyMassExponentConstant = MathFunctions< ScalarType >::Log10Constant( parameters.GetGalaxyMassInSolarMassesLowerBound() );
+        const ScalarType MassExponentStandardDeviationConstant = MaximumGalaxyMassExponentConstant - MinimumGalaxyMassExponentConstant;
+        std::normal_distribution< double > galaxyMassExponentDistribution(
+            MaximumGalaxyMassExponentConstant - MassExponentStandardDeviationConstant,
+            MassExponentStandardDeviationConstant );
+        std::normal_distribution< double > significand( 10.0 );
+        for( size_t i = 0; i < NumberOfGalaxiesConstant; ++i )
+        {
+            ScalarType massExponent = MinimumGalaxyMassExponentConstant - 1.0;
+            while( massExponent < MinimumGalaxyMassExponentConstant ) {
+                massExponent = MathFunctions< ScalarType >::ModuloConstant(
+                    MathFunctions< ScalarType >::RoundUpConstant( galaxyMassExponentDistribution( generator ) ),
+                    MaximumGalaxyMassExponentConstant + 1 );
+            }
+            cluster.galaxies_.push_back(
+                    Galaxy{
+                            .position_ = Vector3{
+                                    cluster.position_.x_ + galaxyPositionDistributor( generator ),
+                                    cluster.position_.y_ + galaxyPositionDistributor( generator ),
+                                    cluster.position_.z_ + galaxyPositionDistributor( generator ) },
+                            .totalMass_ = MathFunctions< ScalarType >::ModuloConstant( significand( generator ), 10.0 ) * 
+                                    MathFunctions< ScalarType >::RaiseConstant( 10.0, massExponent ),
+                            .radius_ = radiusDistributor( generator )
+                    } );
+        }
+    }
+
+
     VectorDistributor MakeDistributor( ScalarType PlacementStandardDeviationConstant, const Vector3& bounds, std::mt19937& generator )
     {
         return VectorDistributor{ .x_ = std::normal_distribution< ScalarType >{ bounds.x_ / 2.0, ( bounds.x_ / 2.0 ) * PlacementStandardDeviationConstant },
