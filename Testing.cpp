@@ -164,4 +164,9 @@ namespace GravitationalLensing
                     << "Mass: " << galaxy.totalMass_ << " Radius: " << galaxy.radius_ << "\n";
         }
     }
+
+    void GeneralTest1()
+    {
+
+    }
 }

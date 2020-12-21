@@ -14,4 +14,5 @@ namespace GravitationalLensing
 	void TestRandomFunctionDerivative();
 	void GeneralTest0();
 	void GalaxyGenerationTest();
+	void GeneralTest1();
 }

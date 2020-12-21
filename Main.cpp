@@ -5,7 +5,7 @@ using namespace GravitationalLensing;
 int main( int argc, char** args )
 {
     std::cout.precision( 16 );
-    GeneralTest1();
+    GalaxyGenerationTest();
     //Testing::DemoDerivatives();
     //TestRandomFunctionDerivative();
     //DumpGravitationalPotentialDerivativesForTest();
